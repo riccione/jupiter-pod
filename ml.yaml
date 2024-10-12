@@ -1,21 +1,32 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: jupyter-pod
+  name: jpod
 spec:
   containers:
   - name: jupyter
-    image: jupyter/base-notebook:latest
+    # jupyter-docker-stacks.readthedocs.io/en/latest/using/selecting.html
+    image: jupyter/datascience-notebook:latest
     ports:
     - containerPort: 8888
     volumeMounts:
+    - mountPath: /home/jovyan/.jupyter
+      name: jupyter-config-volume
     - mountPath: /home/jovyan/work
       name: notebooks-volume
     env:
     - name: JUPYTER_TOKEN
       value: ":)secure_token"  # Set a Jupyter token for access
   volumes:
+  - name: jupyter-config-volume
+    persistentVolumeClaim:
+      claimName: jupyter-config-claim
   - name: notebooks-volume
     hostPath:
       path: ./notebooks  # Path to the local directory for the notebooks
       type: Directory
+
+  volumeClaims:
+  - name: jupyter-config-claim
+    podmanVolume:
+      volumeName: jupyter-config
